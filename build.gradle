@@ -1,0 +1,142 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'signing'
+}
+
+group = 'org.contextmapper'
+version = '1.4.0'
+
+if (!project.hasProperty('signing.secretKeyRingFile')) {
+    project.ext.'signing.secretKeyRingFile' = "${rootDir}/secret-key.gpg"
+}
+
+dependencies {
+	compile "org.eclipse.emf:org.eclipse.emf.common:2.12.0"
+	compile "org.eclipse.emf:org.eclipse.emf.ecore:2.12.0"
+	compile "org.eclipse.platform:org.eclipse.debug.core:3.13.0"
+	compile "org.eclipse.emf:org.eclipse.emf.ecore.xmi:2.12.0"
+}
+
+repositories {
+    jcenter()
+}
+
+task sourcesJar(type: Jar) {
+    from sourceSets.main.allJava
+    archiveClassifier = 'sources'
+}
+
+task javadocJar(type: Jar) {
+    from javadoc
+    archiveClassifier = 'javadoc'
+}
+
+artifacts {
+    archives javadocJar, sourcesJar
+}
+
+signing {
+    sign configurations.archives
+    required { gradle.taskGraph.hasTask("publishMavenJavaPublicationToMavenLocal") || gradle.taskGraph.hasTask("publishMavenJavaPublicationToMavenRepository") }
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+        	customizePom(pom)
+        	
+            artifactId = "${project.name}"
+            groupId = "${project.group}"
+            version = "${project.version}"
+            from components.java
+            artifact sourcesJar
+            artifact javadocJar
+            
+            pom.withXml {
+                def pomFile = file("${project.buildDir}/generated-pom.xml")
+                writeTo(pomFile)
+                def pomAscFile = signing.sign(pomFile).signatureFiles[0]
+                artifact(pomAscFile) {
+                    classifier = null
+                    extension = 'pom.asc'
+                }
+            }
+            
+            signArchives.signatures.each { signature ->
+                artifact(signature) {
+                    def matcher = signature.file =~ /-(sources|javadoc)\.jar\.asc$/
+                    if (matcher.find()) {
+                        classifier = matcher.group(1)
+                    } else {
+                        classifier = null
+                    }
+                    extension = signature.type
+                }
+            }
+        }
+    }
+    repositories {
+        maven {
+            def releasesRepoUrl = "${ossReleaseStagingRepository}"
+            def snapshotsRepoUrl = "${ossSnapshotRepository}"
+            url = project.version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+            
+            credentials {
+                username = System.getenv('OSSRH_USERNAME')
+                password = System.getenv('OSSRH_PASSWORD')
+            }
+        }
+    }
+}
+
+def customizePom(pom) {
+    pom.withXml {
+        def root = asNode()
+
+        // eliminate test-scoped dependencies
+        root.dependencies.removeAll { dep ->
+            dep.scope == "test"
+        }
+
+        root.children().last() + {
+            resolveStrategy = Closure.DELEGATE_FIRST
+
+            description 'The Henshin model & intereter (build and repackaged for maven central by the Context Mapper team)'
+            name 'Henshin'
+            url 'https://git.eclipse.org/c/henshin/org.eclipse.emft.henshin.git/'
+            organization {
+                name 'Henshin'
+                url 'https://www.eclipse.org/henshin'
+            }
+            licenses {
+                license {
+                    name 'Eclipse Public License v1.0'
+                    url 'http://www.eclipse.org/legal/epl-v10.html'
+                }
+            }
+            scm {
+                url 'https://github.com/ContextMapper/henshin-interpreter'
+                connection 'scm:git:git://github.com/ContextMapper/henshin-interpreter.git'
+                developerConnection 'scm:git:ssh://git@github.com:ContextMapper/henshin-interpreter.git'
+            }
+            developers {
+                developer {
+                    name 'Henshin developers'
+                }
+            }
+        }
+    }
+}
+
+model {
+    tasks.generatePomFileForMavenJavaPublication {
+        destination = file("$buildDir/generated-pom.xml")
+    }
+    tasks.publishMavenJavaPublicationToMavenLocal {
+        dependsOn project.tasks.signArchives
+    }
+    tasks.publishMavenJavaPublicationToMavenRepository {
+        dependsOn project.tasks.signArchives
+    }
+}
