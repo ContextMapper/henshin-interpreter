@@ -102,7 +102,7 @@ def customizePom(pom) {
         root.children().last() + {
             resolveStrategy = Closure.DELEGATE_FIRST
 
-            description 'The Henshin model & intereter (build and repackaged for maven central by the Context Mapper team)'
+            description 'The Henshin model and interpreter (build and repackaged for maven central by the Context Mapper team)'
             name 'Henshin'
             url 'https://git.eclipse.org/c/henshin/org.eclipse.emft.henshin.git/'
             organization {
