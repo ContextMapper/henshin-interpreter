@@ -1,4 +1,4 @@
-# Henshin Interpreter (repackaged for Maven)
+# Henshin Interpreter (repackaged for Maven) [![Maven Central](https://img.shields.io/maven-central/v/org.contextmapper/henshin-interpreter.svg?label=Maven%20Central)](https://search.maven.org/search?q=g:%22org.contextmapper%22%20AND%20a:%22henshin-interpreter%22)
 This repository contains the version 1.4.0 of the [Henshin](https://www.eclipse.org/henshin) interpreter. We used Gradle here to repackage the library (with source and javadoc jars) for maven and to publish it to Maven central. We need the interpreter not only within Eclipse but within our standalone library as well.
 
 ## Using the Library
