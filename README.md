@@ -18,6 +18,8 @@ implementation 'org.contextmapper:henshin-interpreter:1.4.0'
 </dependency>
 ```
 
+If you not only need the interpreter but the whole Henshin plugin repackaged for Maven, you may have a look at this project: https://github.com/stefan-ka/henshin-maven
+
 ## Original Source Repository
 The original source repo: https://git.eclipse.org/c/henshin/org.eclipse.emft.henshin.git/
 We have not changed any code of the Henshin developers. We just packaged and published it as Maven artifact.
