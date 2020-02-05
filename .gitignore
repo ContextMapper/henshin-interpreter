@@ -10,3 +10,6 @@ build
 **/.settings
 bin
 
+# IntelliJ
+.idea/
+
