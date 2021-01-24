@@ -8,7 +8,7 @@ We published the interpreter to Maven central, so you can use it within your Mav
 
 **Gradle:**
 ```gradle
-implementation 'org.contextmapper:henshin-interpreter:1.4.0'
+implementation 'org.contextmapper:henshin-interpreter:1.6.0'
 ```
 
 **Maven:**
@@ -16,7 +16,7 @@ implementation 'org.contextmapper:henshin-interpreter:1.4.0'
 <dependency>
   <groupId>org.contextmapper</groupId>
   <artifactId>henshin-interpreter</artifactId>
-  <version>1.4.0</version>
+  <version>1.6.0</version>
 </dependency>
 ```
 
