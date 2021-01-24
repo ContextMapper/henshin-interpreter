@@ -23,6 +23,7 @@ import org.eclipse.emf.ecore.impl.EFactoryImpl;
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
 
 import org.eclipse.emf.henshin.model.*;
+import org.eclipse.emf.henshin.model.Module;
 
 /**
  * <!-- begin-user-doc -->
@@ -91,6 +92,7 @@ public class HenshinFactoryImpl extends EFactoryImpl implements HenshinFactory {
 			case HenshinPackage.OR: return createOr();
 			case HenshinPackage.XOR: return createXor();
 			case HenshinPackage.NOT: return createNot();
+			case HenshinPackage.TRUE: return createTrue();
 			default:
 				throw new IllegalArgumentException("The class '" + eClass.getName() + "' is not a valid classifier");
 		}
@@ -419,6 +421,16 @@ public class HenshinFactoryImpl extends EFactoryImpl implements HenshinFactory {
 	public Not createNot() {
 		NotImpl not = new NotImpl();
 		return not;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public True createTrue() {
+		TrueImpl true_ = new TrueImpl();
+		return true_;
 	}
 
 	/**

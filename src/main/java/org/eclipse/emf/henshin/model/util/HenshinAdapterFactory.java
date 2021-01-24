@@ -11,12 +11,41 @@ package org.eclipse.emf.henshin.model.util;
 
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
-
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
-
 import org.eclipse.emf.ecore.EObject;
-
-import org.eclipse.emf.henshin.model.*;
+import org.eclipse.emf.henshin.model.And;
+import org.eclipse.emf.henshin.model.Annotation;
+import org.eclipse.emf.henshin.model.Attribute;
+import org.eclipse.emf.henshin.model.AttributeCondition;
+import org.eclipse.emf.henshin.model.BinaryFormula;
+import org.eclipse.emf.henshin.model.ConditionalUnit;
+import org.eclipse.emf.henshin.model.Edge;
+import org.eclipse.emf.henshin.model.Formula;
+import org.eclipse.emf.henshin.model.Graph;
+import org.eclipse.emf.henshin.model.GraphElement;
+import org.eclipse.emf.henshin.model.HenshinPackage;
+import org.eclipse.emf.henshin.model.IndependentUnit;
+import org.eclipse.emf.henshin.model.IteratedUnit;
+import org.eclipse.emf.henshin.model.LoopUnit;
+import org.eclipse.emf.henshin.model.Mapping;
+import org.eclipse.emf.henshin.model.ModelElement;
+import org.eclipse.emf.henshin.model.Module;
+import org.eclipse.emf.henshin.model.MultiUnit;
+import org.eclipse.emf.henshin.model.NamedElement;
+import org.eclipse.emf.henshin.model.NestedCondition;
+import org.eclipse.emf.henshin.model.Node;
+import org.eclipse.emf.henshin.model.Not;
+import org.eclipse.emf.henshin.model.Or;
+import org.eclipse.emf.henshin.model.Parameter;
+import org.eclipse.emf.henshin.model.ParameterMapping;
+import org.eclipse.emf.henshin.model.PriorityUnit;
+import org.eclipse.emf.henshin.model.Rule;
+import org.eclipse.emf.henshin.model.SequentialUnit;
+import org.eclipse.emf.henshin.model.True;
+import org.eclipse.emf.henshin.model.UnaryFormula;
+import org.eclipse.emf.henshin.model.UnaryUnit;
+import org.eclipse.emf.henshin.model.Unit;
+import org.eclipse.emf.henshin.model.Xor;
 
 /**
  * <!-- begin-user-doc -->
@@ -198,6 +227,10 @@ public class HenshinAdapterFactory extends AdapterFactoryImpl {
 			@Override
 			public Adapter caseNot(Not object) {
 				return createNotAdapter();
+			}
+			@Override
+			public Adapter caseTrue(True object) {
+				return createTrueAdapter();
 			}
 			@Override
 			public Adapter defaultCase(EObject object) {
@@ -622,6 +655,20 @@ public class HenshinAdapterFactory extends AdapterFactoryImpl {
 	 * @generated
 	 */
 	public Adapter createNotAdapter() {
+		return null;
+	}
+
+	/**
+	 * Creates a new adapter for an object of class '{@link org.eclipse.emf.henshin.model.True <em>True</em>}'.
+	 * <!-- begin-user-doc -->
+	 * This default implementation returns null so that we can easily ignore cases;
+	 * it's useful to ignore a case when inheritance will catch all the cases anyway.
+	 * <!-- end-user-doc -->
+	 * @return the new adapter.
+	 * @see org.eclipse.emf.henshin.model.True
+	 * @generated
+	 */
+	public Adapter createTrueAdapter() {
 		return null;
 	}
 

@@ -54,6 +54,7 @@ import org.eclipse.emf.henshin.model.ParameterMapping;
 import org.eclipse.emf.henshin.model.PriorityUnit;
 import org.eclipse.emf.henshin.model.Rule;
 import org.eclipse.emf.henshin.model.SequentialUnit;
+import org.eclipse.emf.henshin.model.True;
 import org.eclipse.emf.henshin.model.UnaryFormula;
 import org.eclipse.emf.henshin.model.UnaryUnit;
 import org.eclipse.emf.henshin.model.Unit;
@@ -280,6 +281,13 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 	 * @generated
 	 */
 	private EClass notEClass = null;
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	private EClass trueEClass = null;
 
 	/**
 	 * <!-- begin-user-doc -->
@@ -1140,6 +1148,24 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 	 * <!-- end-user-doc -->
 	 * @generated
 	 */
+	public EAttribute getIteratedUnit_Strict() {
+		return (EAttribute)iteratedUnitEClass.getEStructuralFeatures().get(1);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EAttribute getIteratedUnit_Rollback() {
+		return (EAttribute)iteratedUnitEClass.getEStructuralFeatures().get(2);
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
 	public EClass getLoopUnit() {
 		return loopUnitEClass;
 	}
@@ -1250,6 +1276,15 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 	 */
 	public EClass getNot() {
 		return notEClass;
+	}
+
+	/**
+	 * <!-- begin-user-doc -->
+	 * <!-- end-user-doc -->
+	 * @generated
+	 */
+	public EClass getTrue() {
+		return trueEClass;
 	}
 
 	/**
@@ -1436,6 +1471,8 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 
 		iteratedUnitEClass = createEClass(ITERATED_UNIT);
 		createEAttribute(iteratedUnitEClass, ITERATED_UNIT__ITERATIONS);
+		createEAttribute(iteratedUnitEClass, ITERATED_UNIT__STRICT);
+		createEAttribute(iteratedUnitEClass, ITERATED_UNIT__ROLLBACK);
 
 		loopUnitEClass = createEClass(LOOP_UNIT);
 
@@ -1459,6 +1496,8 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 		xorEClass = createEClass(XOR);
 
 		notEClass = createEClass(NOT);
+
+		trueEClass = createEClass(TRUE);
 
 		// Create enums
 		parameterKindEEnum = createEEnum(PARAMETER_KIND);
@@ -1529,6 +1568,7 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 		orEClass.getESuperTypes().add(this.getBinaryFormula());
 		xorEClass.getESuperTypes().add(this.getBinaryFormula());
 		notEClass.getESuperTypes().add(this.getUnaryFormula());
+		trueEClass.getESuperTypes().add(this.getFormula());
 
 		// Initialize classes and features; add operations and parameters
 		initEClass(modelElementEClass, ModelElement.class, "ModelElement", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
@@ -1559,6 +1599,8 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 
 		op = addEOperation(moduleEClass, this.getModule(), "getSubModule", 0, 1, IS_UNIQUE, IS_ORDERED);
 		addEParameter(op, ecorePackage.getEString(), "name", 0, 1, IS_UNIQUE, IS_ORDERED);
+
+		addEOperation(moduleEClass, this.getRule(), "getAllRules", 0, -1, IS_UNIQUE, IS_ORDERED);
 
 		initEClass(unitEClass, Unit.class, "Unit", IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEReference(getUnit_Parameters(), this.getParameter(), this.getParameter_Unit(), "parameters", null, 0, -1, Unit.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
@@ -1772,6 +1814,8 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 
 		initEClass(iteratedUnitEClass, IteratedUnit.class, "IteratedUnit", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 		initEAttribute(getIteratedUnit_Iterations(), ecorePackage.getEString(), "iterations", null, 0, 1, IteratedUnit.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getIteratedUnit_Strict(), ecorePackage.getEBoolean(), "strict", "false", 0, 1, IteratedUnit.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
+		initEAttribute(getIteratedUnit_Rollback(), ecorePackage.getEBoolean(), "rollback", "true", 0, 1, IteratedUnit.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_UNSETTABLE, !IS_ID, IS_UNIQUE, !IS_DERIVED, IS_ORDERED);
 
 		initEClass(loopUnitEClass, LoopUnit.class, "LoopUnit", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
@@ -1805,6 +1849,8 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 		initEClass(xorEClass, Xor.class, "Xor", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
 		initEClass(notEClass, Not.class, "Not", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
+
+		initEClass(trueEClass, True.class, "True", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
 
 		// Initialize enums and add enum literals
 		initEEnum(parameterKindEEnum, ParameterKind.class, "ParameterKind");
@@ -1849,7 +1895,7 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 		  (parameterEClass, 
 		   source, 
 		   new String[] {
-			 "constraints", "nameNotEmpty nameNotTypeName nameNotKindAlias unknownKindDeprecated"
+			 "constraints", "nameNotEmpty nameNotTypeName nameNotKindAlias unknownKindDeprecated nameNotKeyword"
 		   });	
 		addAnnotation
 		  (parameterMappingEClass, 
@@ -1867,25 +1913,25 @@ public class HenshinPackageImpl extends EPackageImpl implements HenshinPackage {
 		  (edgeEClass, 
 		   source, 
 		   new String[] {
-			 "constraints", "equalParentGraphs indexValidJavaScript noContainmentCycles EOppositeContainments oppositeEdgeConsidered noParallelEdgesOfSameType containmentEdgeDeletion containmentEdgeCreation"
+			 "constraints", "equalParentGraphs indexValidJavaScript indexAllParametersAreDeclared noContainmentCycles EOppositeContainments oppositeEdgeConsidered noParallelEdgesOfSameType containmentEdgeDeletion containmentEdgeCreation"
 		   });	
 		addAnnotation
 		  (attributeEClass, 
 		   source, 
 		   new String[] {
-			 "constraints", "valueValidJavaScript"
+			 "constraints", "valueValidJavaScript valueAllParametersAreDeclared"
 		   });	
 		addAnnotation
 		  (attributeConditionEClass, 
 		   source, 
 		   new String[] {
-			 "constraints", "conditionTextNotEmpty conditionValidJavaScript"
+			 "constraints", "conditionTextNotEmpty conditionValidJavaScript conditionAllParametersAreDeclared"
 		   });	
 		addAnnotation
 		  (iteratedUnitEClass, 
 		   source, 
 		   new String[] {
-			 "constraints", "iterationsNotEmpty iterationsValidJavaScript"
+			 "constraints", "iterationsNotEmpty iterationsValidJavaScript iterationsAllParametersAreDeclared"
 		   });	
 		addAnnotation
 		  (nestedConditionEClass, 

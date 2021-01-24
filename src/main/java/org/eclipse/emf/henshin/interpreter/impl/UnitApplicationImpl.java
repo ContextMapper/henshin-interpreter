@@ -36,6 +36,8 @@ import org.eclipse.emf.henshin.model.Rule;
 import org.eclipse.emf.henshin.model.SequentialUnit;
 import org.eclipse.emf.henshin.model.Unit;
 
+import static org.eclipse.emf.henshin.interpreter.util.InterpreterUtil.areNecessaryParametersSet;
+
 /**
  * Default {@link UnitApplication} implementation.
  * 
@@ -82,6 +84,9 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 		if (monitor==null) {
 			monitor = InterpreterFactory.INSTANCE.createApplicationMonitor();
 		}
+
+		areNecessaryParametersSet(unit.getParameters(), unit.getName(), assignment);
+
 		appliedRules.clear();
 		undoneRules.clear();
 		resultAssignment = (assignment!=null) ? 
@@ -203,6 +208,7 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 				break;
 			}
 		}
+		removeHiddenParametersFromResultAssignment();
 		monitor.notifyExecute(this, success);
 		return success;
 	}
@@ -212,7 +218,7 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 	 */
 	protected boolean executeSequentialUnit(ApplicationMonitor monitor) {
 		SequentialUnit seqUnit = (SequentialUnit) unit;
-		boolean success = true;
+		boolean success = false;
 		for (Unit subUnit : seqUnit.getSubUnits()) {
 			if (monitor.isCanceled()) {
 				if (monitor.isUndo()) undo(monitor);
@@ -221,6 +227,7 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 			}
 			UnitApplicationImpl unitApp = createApplicationFor(subUnit);
 			if (unitApp.execute(monitor)) {
+				success = true;
 				updateParameterValues(unitApp);
 				appliedRules.addAll(unitApp.appliedRules);
 			} else {
@@ -229,10 +236,13 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 					if (seqUnit.isRollback()) {
 						undo(monitor);
 					}
+					break;
 				}
-				break;
 			}
 		}
+		if (seqUnit.getSubUnits().isEmpty())
+			success = true;
+		removeHiddenParametersFromResultAssignment();
 		monitor.notifyExecute(this, success);
 		return success;
 	}
@@ -273,6 +283,7 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 		if (!success) {
 			undo(monitor);
 		}
+		removeHiddenParametersFromResultAssignment();
 		monitor.notifyExecute(this, success);
 		return success;
 	}
@@ -296,6 +307,7 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 				break;
 			}
 		}
+		removeHiddenParametersFromResultAssignment();
 		monitor.notifyExecute(this, success);
 		return success;
 	}
@@ -362,7 +374,7 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 		}
 		
 		// Now apply the subunit n times:
-		boolean success = true;
+		boolean success = false;
 		for (int i=0; i<iterations; i++) {
 			if (monitor.isCanceled()) {
 				if (monitor.isUndo()) undo(monitor);
@@ -371,13 +383,20 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 			}
 			UnitApplicationImpl unitApp = createApplicationFor(iteratedUnit.getSubUnit());
 			if (unitApp.execute(monitor)) {
+				success = true;
 				updateParameterValues(unitApp);
 				appliedRules.addAll(unitApp.appliedRules);
 			} else {
-				success = false;
+				if (iteratedUnit.isStrict()) {
+					success = false;
+					if (iteratedUnit.isRollback()) {
+						undo(monitor);
+					}
+				}
 				break;
 			}
 		}
+		removeHiddenParametersFromResultAssignment();
 		monitor.notifyExecute(this, success);
 		return success;
 	}
@@ -402,6 +421,7 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 				break;
 			}
 		}
+		removeHiddenParametersFromResultAssignment();
 		monitor.notifyExecute(this, success);
 		return success;
 	}
@@ -531,4 +551,13 @@ public class UnitApplicationImpl extends AbstractApplicationImpl {
 		return new ArrayList<RuleApplication>(undoneRules);
 	}
 	
+	private void removeHiddenParametersFromResultAssignment() {
+		for (Parameter parameter : unit.getParameters()) {
+			ParameterKind parameterKind = parameter.getKind();
+			if (parameterKind != ParameterKind.OUT && parameterKind != ParameterKind.INOUT
+					&& parameterKind != ParameterKind.VAR) {
+				resultAssignment.setParameterValue(parameter, null);
+			}
+		}
+	}
 }

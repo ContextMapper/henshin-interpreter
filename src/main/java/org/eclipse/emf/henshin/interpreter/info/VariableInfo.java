@@ -78,7 +78,8 @@ public class VariableInfo {
 
 		for (Node node : rule.getLhs().getNodes()) {
 			if (rule.getMappings().getImage(node, rule.getRhs()) == null) {
-				createDanglingConstraints(node);
+				boolean postpone = ruleInfo.getPostponed().contains(node);
+				createDanglingConstraints(node, postpone);
 			}
 		}
 
@@ -91,6 +92,7 @@ public class VariableInfo {
 		for (Node node : g.getNodes()) {
 			EClass type = node.getType();
 			Variable var = new Variable(type);
+			var.name = node.getName();
 			variables.add(var);
 			node2variable.put(node, var);
 			variable2node.put(var, node);
@@ -180,21 +182,7 @@ public class VariableInfo {
 		}
 
 		// Attributes:
-		for (Attribute attribute : node.getAttributes()) {
-			String value = attribute.getValue();
-			AttributeConstraint constraint;
-			if (rule.getParameter(value) != null) {
-				constraint = new AttributeConstraint(attribute.getType(), value, false);
-			} else {
-				Object constant = engine.evalAttributeExpression(attribute, rule);
-				constraint = new AttributeConstraint(attribute.getType(), constant, true);
-			}
-			var.attributeConstraints.add(constraint);
-			UnaryConstraint unaryUserConstraint = engine.createUserConstraints(attribute);
-			if (unaryUserConstraint != null) {
-				var.attributeUserConstraints.put(constraint, unaryUserConstraint);
-			}
-		}
+		createAttributeConstraints(node, var);
 
 		// Path constraints:
 		if (node.getGraph() == rule.getLhs() && !rule.getLhs().getPACs().isEmpty()) {
@@ -213,9 +201,29 @@ public class VariableInfo {
 
 	}
 
-	private void createDanglingConstraints(Node node) {
+	private void createAttributeConstraints(Node node, Variable var) {
+		for (Attribute attribute : node.getAttributes()) {
+			String value = attribute.getValue();
+			AttributeConstraint constraint;
+			if (rule.getParameter(value) != null) {
+				constraint = new AttributeConstraint(attribute.getType(), value, false);
+			} else {
+				Object constant = engine.evalAttributeExpression(attribute, rule);
+				constraint = new AttributeConstraint(attribute.getType(), constant, true);
+			}
+			var.attributeConstraints.add(constraint);
+			UnaryConstraint unaryUserConstraint = engine.createUserConstraints(attribute);
+			if (unaryUserConstraint != null) {
+				var.attributeUserConstraints.put(constraint, unaryUserConstraint);
+			}
+		}
+	}
+
+	private void createDanglingConstraints(Node node, boolean postpone) {
 		Variable var = node2variable.get(node);
-		DanglingConstraint constraint = new DanglingConstraint(getEdgeCounts(node, false), getEdgeCounts(node, true));
+		
+		DanglingConstraint constraint = new DanglingConstraint(getEdgeCounts(node, false), getEdgeCounts(node, true), postpone);
+		
 		var.danglingConstraints.add(constraint);
 	}
 
@@ -311,5 +319,12 @@ public class VariableInfo {
 	}
 
 	private static final Integer ONE = new Integer(1);
+
+	public void updateCached() {
+		for (Entry<Variable, Node> entry : variable2node.entrySet()) {
+			entry.getKey().attributeConstraints.clear();
+			createAttributeConstraints(entry.getValue(), entry.getKey());
+		}
+	}
 
 }

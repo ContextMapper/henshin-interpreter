@@ -11,13 +11,19 @@ package org.eclipse.emf.henshin.model.util;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EcorePackage;
+import org.eclipse.emf.ecore.util.EcoreUtil;
 import org.eclipse.emf.henshin.HenshinModelPlugin;
+import org.eclipse.emf.henshin.model.Attribute;
 import org.eclipse.emf.henshin.model.BinaryFormula;
 import org.eclipse.emf.henshin.model.ConditionalUnit;
 import org.eclipse.emf.henshin.model.Edge;
@@ -66,8 +72,17 @@ public class HenshinModelCleaner {
 			}
 		} while (!remove.isEmpty());
 		
-		// Make sure all used packages are imported:
-		
+		// Remove superfluous meta-model imports and make sure all used packages are imported:
+		Set<EPackage> requiredImports = new HashSet<>();
+		module.eAllContents().forEachRemaining(element -> {
+			if (element instanceof Node) {
+				requiredImports.add(((Node) element).getType().getEPackage());
+			}
+		});
+		if (!requiredImports.isEmpty()) {
+			module.getImports().clear();
+			module.getImports().addAll(requiredImports);
+		}	
 	}
 	
 	/**
@@ -79,18 +94,6 @@ public class HenshinModelCleaner {
 		// Clean the unit itself:
 		if (unit instanceof Rule) {
 			cleanRule((Rule) unit);
-		}
-		if (unit instanceof UnaryUnit) {
-			Unit subUnit = ((UnaryUnit) unit).getSubUnit();
-			if (subUnit==null) {
-				return null;
-			}
-		}
-		if (unit instanceof ConditionalUnit) {
-			ConditionalUnit cond = (ConditionalUnit) unit;
-			if (cond.getIf()==null || cond.getThen()==null || cond.getElse()==null) {
-				return null;
-			}
 		}
 		if (unit instanceof IteratedUnit) {
 			String iterations = ((IteratedUnit) unit).getIterations();
@@ -148,6 +151,7 @@ public class HenshinModelCleaner {
 			rule.getMultiMappings().clear();
 			debug("removed unused multi-mappings of " + rule);
 		}
+		synchronizeShadowEdgesInMultiRules(rule);
 
 		// Recursively clean the multi-rules:
 		for (Rule multi : rule.getMultiRules()) {
@@ -174,7 +178,107 @@ public class HenshinModelCleaner {
 		
 		// Synchronize parameters in multi-rules:
 		synchronizeRuleParameters(rule);
+	}
+	
+	private static void synchronizeShadowEdgesInMultiRules(Rule rule) {
+		for (Edge edge : rule.getLhs().getEdges()) {
+			Edge edgeRhs = rule.getMappings().getImage(edge, rule.getRhs());
+			if (edgeRhs == null) {
+				for (Rule multiRule : rule.getMultiRules()) {
+					Edge counterpartLhs = multiRule.getMultiMappings().getImage(edge, multiRule.getLhs());
+					if (counterpartLhs != null) {
+						Edge counterpartRhs = multiRule.getMappings().getImage(counterpartLhs, multiRule.getRhs());
+						if (counterpartRhs != null) {
+							multiRule.getRhs().removeEdge(counterpartRhs);
+							debug("removed superflouus edge in multi-rule " + multiRule.getName());
+						}
+					}
+				}			
+			} else if (edgeRhs != null) {
+				for (Rule multiRule : rule.getMultiRules()) {
+					Edge counterpartLhs = multiRule.getMultiMappings().getImage(edge, multiRule.getLhs());
+					if (counterpartLhs != null) {
+						Edge counterpartRhs = multiRule.getMappings().getImage(counterpartLhs, multiRule.getRhs());
+						if (counterpartRhs == null) {
+							Node sourceRhs = multiRule.getMappings().getImage(counterpartLhs.getSource(),
+									multiRule.getRhs());
+							Node targetRhs = multiRule.getMappings().getImage(counterpartLhs.getTarget(),
+									multiRule.getRhs());
+							if (sourceRhs != null && targetRhs != null) {
+								HenshinFactory.eINSTANCE.createEdge(sourceRhs, targetRhs, counterpartLhs.getType());
+								debug("added missing edge in multi-rule " + multiRule.getName());
+							}
+						}
+					}
+				}
+			}
+		}
+		for (Edge edge : rule.getRhs().getEdges()) {
+			Edge edgeLhs = rule.getMappings().getOrigin(edge);
+			if (edgeLhs == null) {
+				for (Rule multiRule : rule.getMultiRules()) {
+					Edge counterpartRhs = multiRule.getMultiMappings().getImage(edge, multiRule.getRhs());
+					if (counterpartRhs != null) {
+						Edge counterpartLhs = multiRule.getMappings().getOrigin(counterpartRhs);
+						if (counterpartLhs != null) {
+							multiRule.getLhs().removeEdge(counterpartLhs);
+							debug("removed superflouus edge in multi-rule " + multiRule.getName());
+						}
+					}
+				}			
+			} else if (edgeLhs != null) {
+				for (Rule multiRule : rule.getMultiRules()) {
+					Edge counterpartRhs = multiRule.getMultiMappings().getImage(edge, multiRule.getRhs());
+					if (counterpartRhs != null) {
+						Edge counterpartLhs = multiRule.getMappings().getOrigin(counterpartRhs);
+						if (counterpartLhs == null) {
+							Node sourceLhs = multiRule.getMappings().getOrigin(counterpartRhs.getSource());
+							Node targetLhs = multiRule.getMappings().getOrigin(counterpartRhs.getTarget());
+							if (sourceLhs != null && targetLhs != null) {
+								HenshinFactory.eINSTANCE.createEdge(sourceLhs, targetLhs, counterpartRhs.getType());
+								debug("added missing edge in multi-rule " + multiRule.getName());
+							}
+						}
+					}
+				}
+			}
+		}
+		
+	}
 
+	public static void cleanParameters(Rule rule) {
+
+		Set<String> names = new HashSet<>();
+
+		// Collect parameter names:
+		rule.eAllContents().forEachRemaining(element -> {
+			if (element instanceof Node) {
+				names.add(((Node) element).getName());
+			}
+
+			else if (element instanceof Attribute) {
+				names.add(((Attribute) element).getValue());
+			}
+			
+			else if (element instanceof Edge) {
+				names.add(((Edge) element).getIndex());
+			}
+		});
+
+		// Remove unknown parameters:
+		List<EObject> unknownParamerters = new ArrayList<>();
+
+		rule.eAllContents().forEachRemaining(element -> {
+			if (element instanceof Parameter) {
+				if (!names.contains(((Parameter) element).getName())) {
+					unknownParamerters.add(element);
+				}
+			}
+		});
+
+		for (EObject parameter : unknownParamerters) {
+			EcoreUtil.remove(parameter);
+		}
 	}
 	
 	/**
@@ -480,6 +584,7 @@ public class HenshinModelCleaner {
 			Parameter t = rule.getParameters().get(i);
 			t.setName(s.getName());
 			t.setType(s.getType());
+			t.setKind(s.getKind());
 			t.setDescription(s.getDescription());
 		}
 		for (Rule multiRule : rule.getMultiRules()) {

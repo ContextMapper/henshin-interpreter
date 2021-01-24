@@ -25,6 +25,7 @@
     <eOperations name="getSubModule" eType="#//Module">
       <eParameters name="name" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
     </eOperations>
+    <eOperations name="getAllRules" upperBound="-1" eType="#//Rule"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="subModules" upperBound="-1"
         eType="#//Module" containment="true" eOpposite="#//Module/superModule"/>
     <eStructuralFeatures xsi:type="ecore:EReference" name="superModule" eType="#//Module"
@@ -287,6 +288,10 @@
       <details key="constraints" value="iterationsNotEmpty iterationsValidJavaScript iterationsAllParametersAreDeclared"/>
     </eAnnotations>
     <eStructuralFeatures xsi:type="ecore:EAttribute" name="iterations" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="strict" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="false"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="rollback" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EBoolean"
+        defaultValueLiteral="true"/>
   </eClassifiers>
   <eClassifiers xsi:type="ecore:EClass" name="LoopUnit" eSuperTypes="#//UnaryUnit"/>
   <eClassifiers xsi:type="ecore:EClass" name="Formula" abstract="true" interface="true">
@@ -327,4 +332,5 @@
     <eLiterals name="INOUT" value="3"/>
     <eLiterals name="VAR" value="4"/>
   </eClassifiers>
+  <eClassifiers xsi:type="ecore:EClass" name="True" eSuperTypes="#//Formula"/>
 </ecore:EPackage>

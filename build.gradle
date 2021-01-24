@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'org.contextmapper'
-version = '1.4.0'
+version = '1.6.0'
 
 if (!project.hasProperty('signing.secretKeyRingFile')) {
     project.ext.'signing.secretKeyRingFile' = "${rootDir}/secret-key.gpg"
