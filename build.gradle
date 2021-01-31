@@ -41,6 +41,10 @@ signing {
     required { gradle.taskGraph.hasTask("publishMavenJavaPublicationToMavenLocal") || gradle.taskGraph.hasTask("publishMavenJavaPublicationToMavenRepository") }
 }
 
+javadoc {
+    failOnError = false
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
